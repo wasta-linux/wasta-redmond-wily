@@ -1,0 +1,166 @@
+#!/bin/bash
+
+# ==============================================================================
+# wasta-redmond-toggle
+#
+# This script can be run at any time to "toggle" default settings from
+#   standard Wasta-Linux to "Wasta-Redmond" defaults
+#
+#   2015-11-14 rik: initial script
+#
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Ensure script running as regular user
+# ------------------------------------------------------------------------------
+if [ $(id -u) -eq 0 ]
+then
+    echo "This script should NOT be run with SUDO!  Must be regular user!!"
+    echo "Exiting...."
+    sleep 5s
+    exit 1
+fi
+
+# ------------------------------------------------------------------------------
+# Hack to ensure user knows an admin password: but again changes are made at the
+#   user level, so this is just a hack but no admin password actually needed :)
+# ------------------------------------------------------------------------------
+pkexec echo "starting wasta-redmond"
+RETURN=$?
+if [ $RETURN -ne 0 ];
+then
+    echo
+    echo "*** Administrative Authentication failed, wasta-redmond exiting..."
+    echo
+    exit 1
+fi
+
+
+# ------------------------------------------------------------------------------
+# Initial Setup
+# ------------------------------------------------------------------------------
+
+# if 'auto' parameter passed, run non-interactively
+if [ "$1" == "auto" ];
+then
+    AUTO="auto"
+else
+    AUTO=""
+fi
+
+# Setup Directory for later reference
+DIR=/usr/share/wasta-redmond
+
+if ! [ "$AUTO" ];
+then
+    # prompt user
+    zenity --question --no-wrap --height=200 --width=450 \
+        --title="wasta [Redmond]" \
+        --window-icon=/usr/share/icons/hicolor/64x64/apps/wasta-linux.png \
+        --text="This utility <i><b>TOGGLES</b></i> your Desktop Settings between
+<u>standard Wasta-Linux settings</u> and <u>Wasta-Redmond
+settings</u>, which look similar to Windows 7
+
+<b><i>Do you want to TOGGLE your Desktop Settings?</i></b>"
+
+    if [ "$?" -ne 0 ];
+    then
+        # User didn't say yes: exit
+        exit 0
+    fi
+else
+    echo
+    echo " *** Script Entry: wasta-redmond (auto mode)"
+    echo
+fi
+
+# ------------------------------------------------------------------------------
+# Main Processing
+# ------------------------------------------------------------------------------
+
+sleep 1s
+
+if [ -e /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override ];
+then
+    echo disabling....
+    # --------------------------------------------------------------------------
+    # REDMOND Active, remove symlinks to wasta-redmond schemas
+    # --------------------------------------------------------------------------
+    sudo rm /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override
+    
+    sudo rm /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/z_11_wasta-redmond.gschema.override
+    
+    MSG="Wasta-Redmond is <b>currently active</b>.  Disabling...\n\n"
+else
+    echo enabling....
+    # --------------------------------------------------------------------------
+    # REDMOND NOT active, symlink to wasta-redmond schemas
+    # --------------------------------------------------------------------------
+    sudo ln -s $DIR/resources/z_11_wasta-redmond.gschema.override \
+        /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override
+    
+    sudo ln -s $DIR/resources/z_11_wasta-gnomenu.gschema.override \
+        /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/z_11_wasta-redmond.gschema.override
+    
+    MSG="Wasta-Redmond is <b>currently inactive</b>.  Enabling...\n\n"
+fi
+
+# --------------------------------------------------------------------------
+# Compile schemas affected by wasta-redmond
+# --------------------------------------------------------------------------
+
+sleep 1s
+
+# gnomenu schemas
+sudo glib-compile-schemas \
+    /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/
+
+# MAIN System schemas: Sending any "error" to null (if and key not found)
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas/ &> /dev/null || true;
+
+echo
+echo " *** restarting GNOME ***"
+echo
+sleep 1s
+
+MSG+="Restarting Gnome-Shell to Apply Changes\n\n"
+
+# reset the essential gsettings elements
+gsettings reset org.gnome.shell enabled-extensions
+# ensure TaskBar reset, because wrong settings here can crash gnome-shell
+gsettings reset-recursively org.gnome.shell.extensions.TaskBar
+
+sleep 1s
+
+# replace gnome-shell (need trailing & so script goes on, else just waiting)
+#killall -3 gnome-shell &
+
+nohup gnome-shell --replace &> /dev/null &
+
+# give a few seconds for GNOME to finish restarting
+sleep 5s  
+
+echo
+echo " *** GNOME restarted ***"
+echo
+
+MSG+="Gnome-Shell Restarted Successfully\n\n"
+MSG+="<b>Please reboot your computer if you have any trouble</b>\n\n"
+
+# ------------------------------------------------------------------------------
+# Finished
+# ------------------------------------------------------------------------------
+
+if ! [ "$AUTO" ];
+then
+    # prompt user
+    zenity --info --title "wasta [Redmond]: Finished" --no-wrap --height=150 --width=450 \
+        --window-icon=/usr/share/icons/hicolor/64x64/apps/wasta-linux.png \
+        --text="$MSG"
+else
+    echo
+    echo " *** Script Exit: wasta-redmond (auto mode)"
+    echo
+fi
+
+exit 0

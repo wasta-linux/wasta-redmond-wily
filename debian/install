@@ -1,0 +1,5 @@
+install-files/applications                 usr/share
+install-files/bin                          usr
+install-files/extensions                   usr/share/gnome-shell
+install-files/extensions/*/schemas/*.gschema.xml  usr/share/glib-2.0/schemas
+wasta-redmond                              usr/share
