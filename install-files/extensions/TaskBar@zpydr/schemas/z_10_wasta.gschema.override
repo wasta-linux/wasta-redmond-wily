@@ -26,6 +26,7 @@ display-showapps-button = false
 display-tasks = true
 display-thumbnail = false
 display-workspace-button = false
+first-start = false
 hot-corner = false
 separator-left-tasks = 15
 system-menu = true

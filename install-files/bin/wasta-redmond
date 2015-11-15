@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# wasta-redmond-toggle
+# wasta-redmond
 #
 # This script can be run at any time to "toggle" default settings from
 #   standard Wasta-Linux to "Wasta-Redmond" defaults
@@ -22,21 +22,6 @@ then
 fi
 
 # ------------------------------------------------------------------------------
-# Hack to ensure user knows an admin password: but again changes are made at the
-#   user level, so this is just a hack but no admin password actually needed :)
-# ------------------------------------------------------------------------------
-pkexec echo "starting wasta-redmond"
-RETURN=$?
-if [ $RETURN -ne 0 ];
-then
-    echo
-    echo "*** Administrative Authentication failed, wasta-redmond exiting..."
-    echo
-    exit 1
-fi
-
-
-# ------------------------------------------------------------------------------
 # Initial Setup
 # ------------------------------------------------------------------------------
 
@@ -48,9 +33,6 @@ else
     AUTO=""
 fi
 
-# Setup Directory for later reference
-DIR=/usr/share/wasta-redmond
-
 if ! [ "$AUTO" ];
 then
     # prompt user
@@ -60,7 +42,6 @@ then
         --text="This utility <i><b>TOGGLES</b></i> your Desktop Settings between
 <u>standard Wasta-Linux settings</u> and <u>Wasta-Redmond
 settings</u>, which look similar to Windows 7
-
 <b><i>Do you want to TOGGLE your Desktop Settings?</i></b>"
 
     if [ "$?" -ne 0 ];
@@ -78,45 +59,15 @@ fi
 # Main Processing
 # ------------------------------------------------------------------------------
 
-sleep 1s
-
-if [ -e /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override ];
+# sudo commands done using pkexec so get option for user to change
+pkexec /usr/bin/wasta-redmond-pkexec
+RETURN=$?
+if [ $RETURN -ne 0 ];
 then
-    echo disabling....
-    # --------------------------------------------------------------------------
-    # REDMOND Active, remove symlinks to wasta-redmond schemas
-    # --------------------------------------------------------------------------
-    sudo rm /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override
-    
-    sudo rm /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/z_11_wasta-redmond.gschema.override
-    
-    MSG="Wasta-Redmond is <b>currently active</b>.  Disabling...\n\n"
+    MSG="Authorization failed: Default settings <b>NOT TOGGLED</b>\n\n"
 else
-    echo enabling....
-    # --------------------------------------------------------------------------
-    # REDMOND NOT active, symlink to wasta-redmond schemas
-    # --------------------------------------------------------------------------
-    sudo ln -s $DIR/resources/z_11_wasta-redmond.gschema.override \
-        /usr/share/glib-2.0/schemas/z_11_wasta-redmond.gschema.override
-    
-    sudo ln -s $DIR/resources/z_11_wasta-gnomenu.gschema.override \
-        /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/z_11_wasta-redmond.gschema.override
-    
-    MSG="Wasta-Redmond is <b>currently inactive</b>.  Enabling...\n\n"
+    MSG="Default settings <b>TOGGLED</b>\n\n"
 fi
-
-# --------------------------------------------------------------------------
-# Compile schemas affected by wasta-redmond
-# --------------------------------------------------------------------------
-
-sleep 1s
-
-# gnomenu schemas
-sudo glib-compile-schemas \
-    /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/
-
-# MAIN System schemas: Sending any "error" to null (if and key not found)
-sudo glib-compile-schemas /usr/share/glib-2.0/schemas/ &> /dev/null || true;
 
 echo
 echo " *** restarting GNOME ***"
@@ -127,9 +78,10 @@ MSG+="Restarting Gnome-Shell to Apply Changes\n\n"
 
 # reset the essential gsettings elements
 gsettings reset org.gnome.shell enabled-extensions
+sleep 1s
+
 # ensure TaskBar reset, because wrong settings here can crash gnome-shell
 gsettings reset-recursively org.gnome.shell.extensions.TaskBar
-
 sleep 1s
 
 # replace gnome-shell (need trailing & so script goes on, else just waiting)
@@ -138,7 +90,7 @@ sleep 1s
 nohup gnome-shell --replace &> /dev/null &
 
 # give a few seconds for GNOME to finish restarting
-sleep 5s  
+sleep 3s
 
 echo
 echo " *** GNOME restarted ***"
@@ -164,3 +116,4 @@ else
 fi
 
 exit 0
+

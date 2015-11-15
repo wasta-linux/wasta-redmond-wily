@@ -1,3 +1,11 @@
+wasta-redmond-wily (15.10.0.2) wily; urgency=medium
+
+  * wasta-redmond: split off parts needing sudo to wasta-redmond-pkexec
+  * wasta-redmond-pkexec: added
+  * org.wasta-redmond-pkexec.policy: used for wasta-redmond-pkexec permission
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Sun, 15 Nov 2015 15:18:25 +0300
+
 wasta-redmond-wily (15.10.0.1) wily; urgency=medium
 
   * initial script 
