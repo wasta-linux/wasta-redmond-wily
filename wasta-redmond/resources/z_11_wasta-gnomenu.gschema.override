@@ -13,10 +13,7 @@
 #
 # ==============================================================================
 
-# NOTE: can't use just "Super" for shortcut, doesn't seem to work
 [org.gnome.shell.extensions.gnomenu]
-disable-panel-menu-keyboard = false
 hide-panel-view = true
 hide-shortcuts = false
-panel-menu-keyboard-accelerator = ['<Super>z']
 shortcuts-display = 'Favorites'
