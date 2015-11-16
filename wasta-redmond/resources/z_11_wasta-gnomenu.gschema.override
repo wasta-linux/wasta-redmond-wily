@@ -13,7 +13,9 @@
 #
 # ==============================================================================
 
+# NOT disabling hotcorner: if disabled here, then taskbar crashes
 [org.gnome.shell.extensions.gnomenu]
+disable-activites-hotcorner = false
 hide-panel-view = true
 hide-shortcuts = false
 shortcuts-display = 'Favorites'
