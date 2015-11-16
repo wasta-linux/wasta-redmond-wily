@@ -1,3 +1,10 @@
+wasta-redmond-wily (15.10.0.3) wily; urgency=medium
+
+  * z_11_wasta-gnomenu.gschema.override: do NOT disable hotcorner - if
+    disabled here, then taskbar crashes (taskbar itself will disable it)
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Mon, 16 Nov 2015 08:12:40 +0300
+
 wasta-redmond-wily (15.10.0.2) wily; urgency=medium
 
   * wasta-redmond: split off parts needing sudo to wasta-redmond-pkexec

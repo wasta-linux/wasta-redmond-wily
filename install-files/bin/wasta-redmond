@@ -7,6 +7,9 @@
 #   standard Wasta-Linux to "Wasta-Redmond" defaults
 #
 #   2015-11-14 rik: initial script
+#   2015-11-16 rik: resetting gnomenu: if user has disabled hotcorner in gnomenu
+#       then taskbar will crash, so need to ensure both of those extensions
+#       reset to ensure compatibility.
 #
 # ==============================================================================
 
@@ -80,7 +83,8 @@ MSG+="Restarting Gnome-Shell to Apply Changes\n\n"
 gsettings reset org.gnome.shell enabled-extensions
 sleep 1s
 
-# ensure TaskBar reset, because wrong settings here can crash gnome-shell
+# ensure TaskBar and gnomenu reset, because wrong settings crash gnome-shell
+gsettings reset-recursively org.gnome.shell.extensions.gnomenu
 gsettings reset-recursively org.gnome.shell.extensions.TaskBar
 sleep 1s
 
