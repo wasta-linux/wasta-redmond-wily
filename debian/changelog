@@ -1,3 +1,9 @@
+wasta-redmond-wily (15.10.0.5) wily; urgency=medium
+
+  * extensions/taskbar/schemas: defaulting to show previews set to 200px.
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Tue, 17 Nov 2015 08:10:21 +0300
+
 wasta-redmond-wily (15.10.0.4) wily; urgency=medium
 
   * z_11_wasta-gnomenu.gschema.override: correct 'activites' to 'activities'
